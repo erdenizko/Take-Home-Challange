@@ -1,8 +1,9 @@
 import json
+import os
 from collections import defaultdict
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request
 
-app = Flask(__name__, static_folder="static")
+app = Flask(__name__, static_folder="frontend/dist", static_url_path="/")
 
 # --- Error codes ---
 # API-1xx: Data errors
@@ -76,7 +77,7 @@ def internal_error(e):
 
 @app.route("/")
 def index():
-    return send_from_directory("static", "index.html")
+    return app.send_static_file("index.html")
 
 
 @app.route("/api/partners")
@@ -202,4 +203,5 @@ def deals():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    port = int(os.environ.get("PORT", 5001))
+    app.run(debug=True, port=port)
