@@ -1,0 +1,4 @@
+@import 'tailwindcss';
+@import 'flatpickr/dist/flatpickr.min.css';
+
+@config '../tailwind.config.js';
