@@ -13,6 +13,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY app.py .
 COPY campaign_delivery_sample.json .
+COPY swagger/ ./swagger/
 COPY --from=frontend /app/frontend/dist ./frontend/dist
 EXPOSE 8000
 CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8000", "app:app"]

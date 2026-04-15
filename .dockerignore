@@ -1,7 +1,30 @@
+# Python
 venv/
 __pycache__/
+*.pyc
+
+# Node (built inside Docker)
 frontend/node_modules/
 frontend/dist/
-*.pyc
+
+# Git & CI
 .git
+.github/
+
+# IDE & tools
+.vscode/
+.idea/
+.claude/
+.playwright-mcp/
+
+# Docs & non-runtime files
 docs/
+*.md
+Makefile
+Archive.zip
+
+# Environment
+.env*
+
+# OS
+.DS_Store
