@@ -1,4 +1,185 @@
-@import 'tailwindcss';
-@import 'flatpickr/dist/flatpickr.min.css';
+@import "tailwindcss";
+@import "flatpickr/dist/flatpickr.min.css";
 
-@config '../tailwind.config.js';
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+	--color-brand-dark: #10445C;
+	--color-brand: #70B9DA;
+	--color-brand-light: #E2F5FD;
+	--color-accent-purple: #4C269B;
+	--color-accent-orange: #E87C2A;
+	--color-secondary: #335586;
+}
+
+/* --- Chart + flatpickr theming --- */
+
+:root {
+	--chart-revenue: var(--color-brand-dark);
+	--chart-spend: var(--color-accent-orange);
+	--chart-grid: var(--color-gray-100);
+	--chart-tick: var(--color-gray-400);
+
+	--fp-bg: white;
+	--fp-border: var(--color-gray-300);
+	--fp-text: var(--color-gray-700);
+	--fp-muted: var(--color-gray-500);
+	--fp-hover: var(--color-gray-100);
+	--fp-range: var(--color-gray-200);
+	--fp-selected: var(--color-brand);
+	--fp-selected-text: white;
+	--fp-shadow: rgba(0, 0, 0, 0.1);
+	--fp-arrow: var(--color-gray-500);
+	--fp-arrow-hover: var(--color-gray-700);
+}
+
+.dark {
+	--chart-grid: var(--color-gray-700);
+
+	--fp-bg: var(--color-gray-800);
+	--fp-border: var(--color-gray-700);
+	--fp-text: var(--color-gray-200);
+	--fp-muted: var(--color-gray-400);
+	--fp-hover: var(--color-gray-700);
+	--fp-range: var(--color-gray-700);
+	--fp-selected-text: var(--color-gray-900);
+	--fp-shadow: rgba(0, 0, 0, 0.3);
+	--fp-arrow: var(--color-gray-400);
+	--fp-arrow-hover: var(--color-gray-200);
+}
+
+/* --- Flatpickr theming (third-party DOM) --- */
+
+.flatpickr-calendar {
+	background: var(--fp-bg);
+	border-color: var(--fp-border);
+	box-shadow: 0 4px 6px -1px var(--fp-shadow);
+	padding: 6px 8px;
+}
+
+.flatpickr-current-month {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: row;
+	gap: 1rem;
+}
+
+.flatpickr-months .flatpickr-month,
+.flatpickr-current-month .cur-month,
+.flatpickr-current-month .numInputWrapper,
+.flatpickr-current-month input.cur-year {
+	background: var(--fp-bg);
+	color: var(--fp-text);
+	font-size: 1rem;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-current-month .numInputWrapper {
+	font-size: 1rem;
+}
+
+.flatpickr-weekdays,
+span.flatpickr-weekday {
+	background: var(--fp-bg);
+	color: var(--fp-muted);
+}
+
+.flatpickr-day {
+	color: var(--fp-text);
+}
+
+.flatpickr-day:hover {
+	background: var(--fp-hover);
+	border-color: var(--fp-hover);
+}
+
+.flatpickr-day.inRange {
+	background: var(--fp-range);
+	border-color: var(--fp-range);
+	box-shadow:
+		-5px 0 0 var(--fp-range),
+		5px 0 0 var(--fp-range);
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+	background: var(--fp-selected);
+	border-color: var(--fp-selected);
+	color: var(--fp-selected-text);
+}
+
+.flatpickr-months .flatpickr-prev-month.flatpickr-prev-month {
+	top: 9px;
+	left: 10px;
+}
+
+.flatpickr-months .flatpickr-next-month {
+	top: 9px;
+	right: 10px;
+}
+
+.flatpickr-months .flatpickr-prev-month svg,
+.flatpickr-months .flatpickr-next-month svg {
+	fill: var(--fp-arrow);
+}
+
+.flatpickr-months .flatpickr-prev-month:hover svg,
+.flatpickr-months .flatpickr-next-month:hover svg {
+	fill: var(--fp-arrow-hover);
+}
+
+/* --- Deals table: responsive card ↔ table layout --- */
+
+.deal-row {
+	@apply grid grid-cols-2 gap-1 gap-x-4 p-3 border border-gray-200 dark:border-gray-700 rounded-xl mb-2;
+	@apply md:table-row md:p-0 md:border-0 md:border-t md:border-gray-100 md:dark:border-gray-700 md:rounded-none md:mb-0;
+	@apply md:hover:bg-gray-100 md:dark:hover:bg-gray-700 transition-colors;
+}
+
+.deal-cell {
+	@apply col-span-full text-left pb-1.5 border-b border-gray-100 dark:border-gray-700 mb-0.5 px-2 py-2;
+	@apply md:col-auto md:pb-0 md:border-b-0 md:mb-0 md:p-2;
+}
+
+.metric-cell {
+	@apply text-left py-0.5 px-2 md:text-right md:p-2;
+}
+
+.metric-cell::before {
+	content: attr(data-label);
+	@apply block text-[0.625rem] uppercase tracking-wider text-gray-400 mb-0.5 md:hidden;
+}
+
+/* --- KPI card --- */
+
+.kpi-label {
+	@apply text-xs text-gray-500 font-medium;
+}
+
+.kpi-value {
+	@apply text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100;
+}
+
+.kpi-sub {
+	@apply text-xs text-gray-500 mt-1;
+}
+
+/* --- Deals table: sub-text inside cells --- */
+
+.deal-sub-text {
+	@apply text-xs text-gray-500 dark:text-gray-400 leading-tight mt-0.5;
+}
+
+/* --- Flatpickr preset buttons (JS-generated DOM) --- */
+
+.flatpickr-presets {
+	@apply p-2 border-t border-[var(--fp-border)] flex flex-wrap gap-1;
+}
+
+.flatpickr-preset-btn {
+	@apply px-2.5 py-1 text-xs rounded-full border cursor-pointer;
+	@apply bg-[var(--fp-bg)] text-[var(--fp-text)] border-[var(--fp-border)];
+	@apply hover:bg-[var(--fp-hover)];
+}

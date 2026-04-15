@@ -7,9 +7,16 @@ __pycache__/
 frontend/node_modules/
 frontend/dist/
 
-# IDE
+# IDE & tools
 .vscode/
 .idea/
+.playwright-mcp/
+
+# Environment
+.env*
 
 # OS
 .DS_Store
+
+# Archives
+Archive.zip

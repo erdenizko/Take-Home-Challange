@@ -1,9 +1,35 @@
 # Campaign Performance Dashboard
 
-A simple dashboard for exploring campaign delivery data — impressions, spend, revenue, and margin across 26 deals over 30 days.
+A dashboard for exploring campaign delivery data — impressions, spend, revenue, and margin across 26 deals over 30 days.
 
-## Setup
+## Prerequisites
 
+- Python 3.14+
+- Node.js 20+
+- Docker (for containerised builds)
+
+## Development
+
+### Quick start
+
+```bash
+# Install all dependencies (backend + frontend)
+make install
+
+# Run both Flask and Vite dev servers in a single terminal
+make dev
+```
+
+This starts:
+- **Flask API** on `http://localhost:5001`
+- **Vite dev server** on `http://localhost:5173` (proxies `/api/*` to Flask)
+
+Open `http://localhost:5173` for development with hot module replacement.
+Press `Ctrl+C` to stop both servers.
+
+### Manual setup (two terminals)
+
+**Terminal 1 — Backend:**
 ```bash
 python3 -m venv venv
 source venv/bin/activate
@@ -11,39 +37,90 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Open [http://localhost:5001](http://localhost:5001) in your browser.
+**Terminal 2 — Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## Approach
+### Docker (production-like local build)
 
-**Backend:** A single Flask file (`app.py`) that loads the JSON data at startup and exposes four API endpoints:
+```bash
+docker build -t campaign-dashboard .
+docker run -p 8000:8000 campaign-dashboard
+```
 
-- `GET /api/summary` — Total impressions, spend, revenue, margin
-- `GET /api/by-buy-type` — Breakdown by buy type
-- `GET /api/daily-trends` — Day-by-day totals for charting
-- `GET /api/deals` — Deal-level aggregated performance
+Open `http://localhost:8000`. Gunicorn serves the app with 4 workers.
 
-All endpoints accept an optional `?buy_type=` query parameter for filtering. Aggregation uses plain Python (`defaultdict`) — no pandas needed for 780 records.
+## API Documentation (Swagger)
 
-**Frontend:** A single HTML page using Tailwind CSS (CDN) for styling and Chart.js (CDN) for the trend chart. No build step, no framework.
+Interactive API docs are available via Swagger UI, powered by [Flasgger](https://github.com/flasgger/flasgger).
 
-**Interactions:**
-- **Buy type filter** — dropdown in the header updates all sections (KPIs, chart, table)
-- **Column sorting** — click any table header to sort; click again to reverse
+| URL | Description |
+|-----|-------------|
+| `/apidocs/` | Swagger UI — browse and try endpoints interactively |
+| `/apispec.json` | Raw OpenAPI 2.0 spec (JSON) |
+
+### Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/partners` | List unique supply partners |
+| GET | `/api/summary` | Aggregated KPIs (impressions, spend, revenue, margin) |
+| GET | `/api/by-buy-type` | KPI breakdown by buy type |
+| GET | `/api/daily-trends` | Daily aggregated metrics for charting |
+| GET | `/api/deals` | Deal-level performance, sorted by margin |
+
+All endpoints except `/api/partners` and `/api/by-buy-type` accept optional query parameters: `buy_type`, `supply_partner`, `start_date`, `end_date`.
+
+## CI/CD
+
+GitHub Actions workflows are in `.github/workflows/`.
+
+### CI (`ci.yml`) — runs on every push and PR to `main`
+
+| Job | What it does |
+|-----|-------------|
+| Backend | Installs Python deps, lints with `ruff`, smoke-tests all API endpoints |
+| Frontend | Installs Node deps, runs `vite build` |
+| Docker | Builds the full multi-stage Docker image |
+
+### Deploy (`deploy.yml`) — runs on push to `main`
+
+Builds a Docker image, pushes to ECR, and deploys to ECS Fargate.
+
+| Step | Description |
+|------|-------------|
+| Configure AWS | OIDC-based role assumption (no long-lived keys) |
+| ECR Login | Authenticates to private container registry |
+| Build & Push | Tags image with commit SHA + `latest`, pushes to ECR |
+| Update Task Def | Swaps the new image into the current ECS task definition |
+| Deploy | Registers new task def, updates ECS service, waits for stability |
+
+### AWS Setup Required
+
+1. **ECR repository** — `campaign-dashboard`
+2. **ECS cluster** — `campaign-cluster` with a Fargate service `campaign-service`
+3. **IAM OIDC provider** for GitHub Actions + IAM role with ECR push and ECS deploy permissions
+4. **GitHub repo secret** — `AWS_ROLE_ARN` set to the IAM role ARN
+
+Update the `env:` block in `deploy.yml` if your naming or region differs (default: `eu-west-1`).
+
+## Architecture
+
+```
+Browser --> ALB --> ECS Fargate (Gunicorn + Flask)
+                         |
+                   frontend/dist/  (static assets)
+                   app.py          (API + serves frontend)
+                   campaign_delivery_sample.json (data)
+```
 
 ## Technology choices
 
 - **Vanilla JS** — the dataset is small and the interactions are simple. A framework would add complexity without benefit here.
-- **Tailwind CSS via CDN** — rapid utility-class styling without a build pipeline. Matches Broadlab's existing stack.
+- **Tailwind CSS** — utility-class styling via Vite plugin. Matches Broadlab's existing stack.
 - **Chart.js** — lightweight, well-documented, produces clean charts with minimal configuration.
+- **Flask + Flasgger** — minimal backend with auto-generated Swagger docs from route docstrings.
 - **No pandas** — with 780 records, stdlib `defaultdict` handles aggregation cleanly and keeps dependencies minimal.
-
-## Deployment sketch (AWS)
-
-For a production deployment, I would use:
-
-1. **ECS Fargate** — containerise the Flask app with a Dockerfile and deploy to Fargate. No server management, scales horizontally, and integrates with ALB for load balancing.
-2. **Application Load Balancer (ALB)** — route traffic to ECS tasks, handle HTTPS termination with an ACM certificate.
-3. **S3 + CloudFront** (optional) — if the frontend grows, serve static assets from S3 behind CloudFront for caching and lower latency. For this small app, serving from Flask via ALB is sufficient.
-4. **ECR** — store Docker images in Elastic Container Registry.
-
-This setup is simple, serverless-ish (no EC2 to manage), and handles the scale an internal dashboard would need. For even simpler deployment, AWS Elastic Beanstalk with a Docker platform would work with minimal configuration.
