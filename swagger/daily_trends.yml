@@ -1,0 +1,63 @@
+Daily trend data.
+Returns daily aggregated impressions, spend, and revenue for charting. Supports optional filtering.
+---
+tags:
+  - Trends
+parameters:
+  - name: buy_type
+    in: query
+    type: string
+    required: false
+    enum: [CTV, Display, Audio, BVOD]
+    description: Filter by buy type
+  - name: supply_partner
+    in: query
+    type: string
+    required: false
+    description: Filter by supply partner (see /api/partners for valid values)
+  - name: start_date
+    in: query
+    type: string
+    format: date
+    required: false
+    description: Start date filter (YYYY-MM-DD)
+  - name: end_date
+    in: query
+    type: string
+    format: date
+    required: false
+    description: End date filter (YYYY-MM-DD)
+responses:
+  200:
+    description: Daily aggregated metrics (sorted chronologically)
+    schema:
+      type: array
+      items:
+        $ref: '#/definitions/DailyTrend'
+  400:
+    description: Invalid filter value
+    schema:
+      $ref: '#/definitions/ApiError'
+  503:
+    description: Campaign data unavailable
+    schema:
+      $ref: '#/definitions/ApiError'
+definitions:
+  DailyTrend:
+    type: object
+    properties:
+      date:
+        type: string
+        format: date
+        example: "2026-03-01"
+      impressions:
+        type: integer
+        example: 847391
+      spend:
+        type: number
+        format: float
+        example: 3234.56
+      revenue:
+        type: number
+        format: float
+        example: 15678.90

@@ -1,0 +1,34 @@
+KPI breakdown by buy type.
+Returns impressions, spend, revenue, and margin grouped by buy type (CTV, Display, Audio, BVOD).
+---
+tags:
+  - KPIs
+responses:
+  200:
+    description: KPI breakdown per buy type (sorted alphabetically)
+    schema:
+      type: array
+      items:
+        $ref: '#/definitions/BuyTypeBreakdown'
+definitions:
+  BuyTypeBreakdown:
+    type: object
+    properties:
+      buy_type:
+        type: string
+        example: "CTV"
+      impressions:
+        type: integer
+        example: 523456
+      spend:
+        type: number
+        format: float
+        example: 1234.56
+      revenue:
+        type: number
+        format: float
+        example: 5678.90
+      margin:
+        type: number
+        format: float
+        example: 4444.34

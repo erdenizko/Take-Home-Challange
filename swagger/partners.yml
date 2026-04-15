@@ -1,0 +1,30 @@
+List unique supply partners.
+Returns all supply partner names available for filtering.
+---
+tags:
+  - Partners
+responses:
+  200:
+    description: Sorted list of supply partner names
+    schema:
+      type: array
+      items:
+        type: string
+      example: ["Amazon Prime Video", "Roku", "Samsung Ads"]
+  503:
+    description: Campaign data unavailable
+    schema:
+      $ref: '#/definitions/ApiError'
+definitions:
+  ApiError:
+    type: object
+    properties:
+      error:
+        type: object
+        properties:
+          code:
+            type: string
+            example: "data_unavailable"
+          message:
+            type: string
+            example: "Campaign data is not available."

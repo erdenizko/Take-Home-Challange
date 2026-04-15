@@ -1,0 +1,61 @@
+Overall KPI totals.
+Returns aggregated impressions, spend, revenue, and margin. Supports optional filtering.
+---
+tags:
+  - KPIs
+parameters:
+  - name: buy_type
+    in: query
+    type: string
+    required: false
+    enum: [CTV, Display, Audio, BVOD]
+    description: Filter by buy type
+  - name: supply_partner
+    in: query
+    type: string
+    required: false
+    description: Filter by supply partner (see /api/partners for valid values)
+  - name: start_date
+    in: query
+    type: string
+    format: date
+    required: false
+    description: Start date filter (YYYY-MM-DD)
+  - name: end_date
+    in: query
+    type: string
+    format: date
+    required: false
+    description: End date filter (YYYY-MM-DD)
+responses:
+  200:
+    description: Aggregated KPI totals
+    schema:
+      $ref: '#/definitions/Summary'
+  400:
+    description: Invalid filter value
+    schema:
+      $ref: '#/definitions/ApiError'
+  503:
+    description: Campaign data unavailable
+    schema:
+      $ref: '#/definitions/ApiError'
+definitions:
+  Summary:
+    type: object
+    properties:
+      impressions:
+        type: integer
+        example: 2547391
+      spend:
+        type: number
+        format: float
+        example: 10234.56
+      revenue:
+        type: number
+        format: float
+        example: 45678.90
+      margin:
+        type: number
+        format: float
+        example: 35444.34
